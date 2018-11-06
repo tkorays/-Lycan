@@ -1,4 +1,5 @@
 #pragma once 
+#include "Crack.hpp"
 
 namespace Lycan {
     class IScopeTarget {
@@ -8,7 +9,7 @@ namespace Lycan {
     };
 
     template<class TScopeTarget> 
-    class ScopeWrapper {
+    class ScopeWrapper : private DisableCopy {
     public: 
         ScopeWrapper(TScopeTarget* t) {
             if(!t) return;
@@ -22,7 +23,5 @@ namespace Lycan {
         TScopeTarget* scopeObj;
     private: 
         ScopeWrapper() { }
-        ScopeWrapper(const ScopeWrapper&);
-        ScopeWrapper& operator=(const ScopeWrapper&);
     };
 };
