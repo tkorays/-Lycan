@@ -2,7 +2,7 @@
 #include <vector>
 #include <algorithm>
 #include <map>
-#include <set>
+#include <set> 
 
 namespace Lycan {
     typedef int ObservableId;;
@@ -14,10 +14,11 @@ namespace Lycan {
 
     class IObserver {
     public:
-        virtual void SetProxy(IObservableProxy* p) { proxy = p; }
         virtual void Notified(IObservable* observable) = 0;
-        virtual void Subscribe(ObservableId id);
-        virtual void Unsubscribe(ObservableId id);
+        void SetProxy(IObservableProxy* p) { proxy = p; }
+        void Subscribe(ObservableId id);
+        void Unsubscribe(ObservableId id);
+        void UnsubscribeAll();
     protected: 
         IObservableProxy* proxy;
     };
@@ -28,18 +29,20 @@ namespace Lycan {
         virtual void PublishTo(IObservable* from, IObserver* to) = 0;
         void Subscribe(IObserver* observer, ObservableId id);
         void Unsubscribe(IObserver* observer, ObservableId id);
+        void UnsubscribeAll(IObserver* observer);
         void Register(ObservableId id, IObservable* observable);
         void Unregister(ObservableId id, IObservable* observable);
         template <typename T> Observable<T>* GetObservable(ObservableId id);
     protected: 
         virtual void Publish(IObservable* from);
-        std::map< 
+        typedef std::map< 
             ObservableId,
             std::pair<
                 IObservable*,
                 std::set<IObserver*>
             >
-        > observers;
+        > observer_map_t;
+        observer_map_t observers;
     };
 
     class IObservable {
@@ -86,6 +89,12 @@ namespace Lycan {
         }
     }
 
+    void IObserver::UnsubscribeAll() {
+        if(proxy) {
+            proxy->UnsubscribeAll(this);
+        }
+    }
+
     void IObservableProxy::Publish(IObservable* from) {
         if(!from) return;
         for(auto it : observers) {
@@ -107,6 +116,15 @@ namespace Lycan {
         if(!observer) return;
         if(observers.find(id) != observers.end()) {
             observers[id].second.erase(observer);
+        }
+    }
+   
+    void IObservableProxy::UnsubscribeAll(IObserver* observer) {
+        if(!observer) return;
+        for(auto it : observers) {
+            if(it.second.first && it.second.second.find(observer) != it.second.second.end()) {
+                observers[it.first].second.erase(observer);
+            }
         }
     }
 
@@ -141,7 +159,7 @@ namespace Lycan {
 
     void IObservable::Publish() {
         if(proxy) {
-                proxy->Publish(this);
-            }
+            proxy->Publish(this);
+        }
     }
 }

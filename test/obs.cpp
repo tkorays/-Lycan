@@ -56,13 +56,16 @@ int main() {
     WinB winb;
     winb.SetProxy(&proxy);
     winb.RegisterObservers();
-    
+
     winb.Subscribe(0);
     winb.Subscribe(1);
-
+    //winb.UnsubscribeAll();
+    winb.Unsubscribe(1);
     sa.a.Update(4);
     sa.b.Update("1234");
 
     proxy.UpdateA(5);
+
+    
     return 0;
 }
