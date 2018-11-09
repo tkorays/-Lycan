@@ -9,6 +9,7 @@ namespace Lycan {
     class IObservable;
     class IObserver;
     class IObservableProxy;
+    template <typename T> class Observable;
     
 
     class IObserver {
@@ -23,12 +24,15 @@ namespace Lycan {
 
     class IObservableProxy {
     public: 
-        virtual void Publish(IObservable* from) = 0;
-        virtual void Subscribe(IObserver* observer, ObservableId id);
-        virtual void Unsubscribe(IObserver* observer, ObservableId id);
-        virtual void Register(ObservableId id, IObservable* observable);
-        virtual void Unregister(ObservableId id, IObservable* observable);
+        friend class IObservable;
+        virtual void PublishTo(IObservable* from, IObserver* to) = 0;
+        void Subscribe(IObserver* observer, ObservableId id);
+        void Unsubscribe(IObserver* observer, ObservableId id);
+        void Register(ObservableId id, IObservable* observable);
+        void Unregister(ObservableId id, IObservable* observable);
+        template <typename T> Observable<T>* GetObservable(ObservableId id);
     protected: 
+        virtual void Publish(IObservable* from);
         std::map< 
             ObservableId,
             std::pair<
@@ -41,9 +45,12 @@ namespace Lycan {
     class IObservable {
     public:
         virtual void SetProxy(IObservableProxy* p) { proxy = p; }
+        void SetId(ObservableId _id) { id = _id; }
+        ObservableId GetId() const { return id; }
     protected:
         virtual void Publish();
         IObservableProxy* proxy;
+        ObservableId id;
     };
 
     template <typename T>
@@ -57,11 +64,15 @@ namespace Lycan {
                 Publish();
             }
         }
+        const T& GetValue() const { return _observed_value; }
     protected:
         T _observed_value;
         bool is_first_assign;
     };
 
+    //////////////////////////////////////////////////////////////////
+    // start of implements
+    //////////////////////////////////////////////////////////////////
 
     void IObserver::Subscribe(ObservableId id) {
         if(proxy) {
@@ -72,6 +83,17 @@ namespace Lycan {
     void IObserver::Unsubscribe(ObservableId id) {
         if(proxy) {
             proxy->Unsubscribe(this, id);
+        }
+    }
+
+    void IObservableProxy::Publish(IObservable* from) {
+        if(!from) return;
+        for(auto it : observers) {
+            if(it.first == from->GetId()) {
+                for(auto itt : it.second.second) {
+                    PublishTo(from, itt);
+                }
+            }
         }
     }
 
@@ -95,6 +117,7 @@ namespace Lycan {
             observers[id].first = observable;
             observers[id].second = std::set<IObserver*>();
             observable->SetProxy(this);
+            observable->SetId(id);
         }
     }
 
@@ -104,6 +127,16 @@ namespace Lycan {
         if(it != observers.end()) {
             observers.erase(it);
         }
+    }
+
+    template <typename T>
+    Observable<T>* IObservableProxy::GetObservable(ObservableId id) {
+        IObservable* ob = observers[id].first;
+        if(ob) {
+            Observable<T>* ret = dynamic_cast<Observable<T>*>(ob);
+            if(ret) return ret;
+        }
+        return 0;
     }
 
     void IObservable::Publish() {
