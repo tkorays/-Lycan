@@ -110,14 +110,14 @@ namespace Lycan {
 
     void IObservableProxy::Subscribe(IObserver* observer, ObservableId id) {
         if(!observer) return;
-        AutoScopeLocker lock(&locker);
+        ScopeWrapper<ILocker> lock(&locker);
         if(observers.find(id) != observers.end()) {
             observers[id].second.insert(observer);
         }
     }
     void IObservableProxy::Unsubscribe(IObserver* observer, ObservableId id) {
         if(!observer) return;
-        AutoScopeLocker lock(&locker);
+        ScopeWrapper<ILocker> lock(&locker);
         if(observers.find(id) != observers.end()) {
             observers[id].second.erase(observer);
         }
@@ -125,7 +125,7 @@ namespace Lycan {
    
     void IObservableProxy::UnsubscribeAll(IObserver* observer) {
         if(!observer) return;
-        AutoScopeLocker lock(&locker);
+        ScopeWrapper<ILocker> lock(&locker);
         for(auto it : observers) {
             if(it.second.first && it.second.second.find(observer) != it.second.second.end()) {
                 observers[it.first].second.erase(observer);
@@ -135,6 +135,7 @@ namespace Lycan {
 
     void IObservableProxy::Register(ObservableId id, IObservable* observable) {
         if(!observable) return;
+        ScopeWrapper<ILocker> lock(&locker);
         auto it = observers.find(id);
         if(it == observers.end()) {
             observers[id].first = observable;
@@ -146,6 +147,7 @@ namespace Lycan {
 
     void IObservableProxy::Unregister(ObservableId id, IObservable* observable) {
         if(!observable) return;
+        ScopeWrapper<ILocker> lock(&locker);
         auto it = observers.find(id);
         if(it != observers.end()) {
             observers.erase(it);
@@ -154,6 +156,7 @@ namespace Lycan {
 
     template <typename T>
     Observable<T>* IObservableProxy::GetObservable(ObservableId id) {
+        ScopeWrapper<ILocker> lock(&locker);
         IObservable* ob = observers[id].first;
         if(ob) {
             Observable<T>* ret = dynamic_cast<Observable<T>*>(ob);
