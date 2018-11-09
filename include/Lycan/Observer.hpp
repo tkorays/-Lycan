@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <map>
 #include <set> 
+#include "ScopeLocker.hpp"
 
 namespace Lycan {
     typedef int ObservableId;;
@@ -43,6 +44,7 @@ namespace Lycan {
             >
         > observer_map_t;
         observer_map_t observers;
+        SimpleLocker locker;
     };
 
     class IObservable {
@@ -108,12 +110,14 @@ namespace Lycan {
 
     void IObservableProxy::Subscribe(IObserver* observer, ObservableId id) {
         if(!observer) return;
+        AutoScopeLocker lock(&locker);
         if(observers.find(id) != observers.end()) {
             observers[id].second.insert(observer);
         }
     }
     void IObservableProxy::Unsubscribe(IObserver* observer, ObservableId id) {
         if(!observer) return;
+        AutoScopeLocker lock(&locker);
         if(observers.find(id) != observers.end()) {
             observers[id].second.erase(observer);
         }
@@ -121,6 +125,7 @@ namespace Lycan {
    
     void IObservableProxy::UnsubscribeAll(IObserver* observer) {
         if(!observer) return;
+        AutoScopeLocker lock(&locker);
         for(auto it : observers) {
             if(it.second.first && it.second.second.find(observer) != it.second.second.end()) {
                 observers[it.first].second.erase(observer);
