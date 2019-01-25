@@ -24,6 +24,7 @@ namespace Math {
     class Matrix {
     public: 
         typedef T ValueType;
+        Matrix() : data(0), width(0), height(0) { }
         Matrix(char* _data, size_t _width, size_t _height)
             : data((ValueType*)_data), width(_width), height(_height) { }
 

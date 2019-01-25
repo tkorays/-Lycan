@@ -1,4 +1,6 @@
 #pragma once
+#include <stddef.h>
+#include <stdint.h>
 
 namespace Lycan { 
 namespace Graphic2D {
@@ -18,14 +20,24 @@ namespace Graphic2D {
 
         Point() : x(0), y(0) { }
         Point(T _x, T _y) : x(_x), y(_y) { }
-        Point& operator+(const Point& p) { x += p.x; y += p.y; return *this; }
-        Point& operator-(const Point& p) { x -= p.x; y -= p.y; return *this; }
-        template <typename Q> Point& operator+(Q q) { x += q; y += q; return *this; }
-        template <typename Q> Point& operator-(Q q) { x -= q; y -= q; return *this; }
-        template <typename Q> Point& operator*(Q q) { x *= q; y *= q; return *this; }
-        template <typename Q> Point& operator/(Q q) { x /= q; y /= q; return *this; }
+        Point operator+(const Point& p) { return Point<T>(x + p.x, y + p.y); }
+        Point operator-(const Point& p) { return Point<T>(x - p.x, y - p.y); }
+        template <typename Q> Point operator+(Q q) { return Point<T>(x + q, y + q); }
+        template <typename Q> Point operator-(Q q) { return Point<T>(x - q, y - q); }
+        template <typename Q> Point operator*(Q q) { return Point<T>(x * q, y * q); }
+        template <typename Q> Point operator/(Q q) { return Point<T>(x / q, y / q); }
         inline bool operator==(const Point& p) { return p.x == x && p.y == y; }
     };
+
+    typedef Point<int8_t> PointI8;
+    typedef Point<uint8_t> PointU8;
+    typedef Point<int16_t> PointI16;
+    typedef Point<uint16_t> PointU16;
+    typedef Point<int32_t> PointI32;
+    typedef Point<uint32_t> PointU32;
+    typedef Point<float> PointF;
+    typedef Point<double> PointD;
+
 
     template <typename T> 
     class Size {
@@ -38,10 +50,10 @@ namespace Graphic2D {
         Size() : cx(0), cy(0) { }
         Size(T _cx, T _cy) : cx(_cx), cy(_cy) { }
         Size(const Size& sz) : cx(sz.cx), cy(sz.cy) {}
-        template <typename Q> Size& operator+(Q q) { cx += q; cy += q; return *this; }
-        template <typename Q> Size& operator-(Q q) { cx -= q; cy -= q; return *this; }
-        template <typename Q> Size& operator*(Q q) { cx *= q; cy *= q; return *this; }
-        template <typename Q> Size& operator/(Q q) { cx /= q; cy /= q; return *this; }
+        template <typename Q> Size operator+(Q q) { return Size<T>(cx + q, cy + q); }
+        template <typename Q> Size operator-(Q q) { return Size<T>(cx - q, cy - q); }
+        template <typename Q> Size operator*(Q q) { return Size<T>(cx * q, cy * q); }
+        template <typename Q> Size operator/(Q q) { return Size<T>(cx / q, cy / q); }
         inline bool operator==(const Size& sz) { return sz.cx == cx && sz.cy == cy; }
     };
 
