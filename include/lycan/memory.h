@@ -16,6 +16,12 @@ class Allocator {
 public: 
     Allocator() {}
     ~Allocator() {}
+    T* malloc(size_t count) {
+        return allocate(count);
+    }
+    void free(T* p) {
+        return deallocate(p);
+    }
     static T* allocate(size_t count) {
         void* p = malloc(sizeof(T)*count + sizeof(uintptr_t) + TAlign);
         void* t = MemoryAlign(p, TAlign);
@@ -33,6 +39,12 @@ class Allocator<T, 0> {
 public: 
     Allocator() { }
     ~Allocator() { }
+    T* malloc(size_t count) {
+        return allocate(count);
+    }
+    void free(T* p) {
+        return deallocate(p);
+    }
     static T* allocate(size_t count) {
         return (T*)malloc(count*sizeof(T));
     }

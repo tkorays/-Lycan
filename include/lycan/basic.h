@@ -7,8 +7,10 @@
 
 namespace lycan {
 
-template <typename T> inline T max(T&& a, T&& b) { return a > b ? a : b; }
-template <typename T> inline T min(T&& a, T&& b) { return a < b ? a : b; }
+using std::max;
+using std::min;
+//template <typename T> inline T max(T&& a, T&& b) { return a > b ? a : b; }
+//template <typename T> inline T min(T&& a, T&& b) { return a < b ? a : b; }
 
 template <typename T>
 class PositionT {
@@ -296,7 +298,8 @@ public:
             if(m_data) delete m_data;
         }
     }
-    MatrixT(MatrixT& m) : MatrixT(m.m_data, m.m_rows, m.m_cols, false), m_dataRef(m.m_dataRef) { 
+    MatrixT(MatrixT& m) : MatrixT(m.m_data, m.m_rows, m.m_cols, false) { 
+        m_dataRef = m.m_dataRef;
         if(m_dataRef == nullptr) { 
             m.m_dataRef = new ReferenceT<ValueType>(m_data);
         }
@@ -304,15 +307,54 @@ public:
         if(m_dataRef) m_dataRef->addRef();
     }
 
-    MatrixT(const MatrixT& m) : MatrixT(m.m_data, m.m_rows, m.m_cols, false), m_dataRef(m.m_dataRef) { 
+    MatrixT(const MatrixT& m) { 
+        m_data = m.m_data;
+        m_rows = m.m_rows;
+        m_cols = m.m_cols;
+        // not manage if no refs
+        m_managed = m.m_dataRef ? m.m_managed : false;
+        m_dataRef = m.m_dataRef;
         if(m_dataRef) m_dataRef->addRef();
     }
 
+    MatrixT(MatrixT&& m) {
+        m_data = m.m_data;
+        m_rows = m.m_rows;
+        m_cols = m.m_cols;
+        m_managed = m.m_managed;
+        m_dataRef = m.m_dataRef;
+        m.clear();
+    }
+
     MatrixT& operator=(MatrixT& m) {
-        return MatrixT(*this); 
+        m_dataRef = m.m_dataRef;
+        if (m_dataRef == nullptr) {
+            m.m_dataRef = new ReferenceT<ValueType>(m_data);
+        }
+        m_dataRef = m.m_dataRef;
+        if (m_dataRef) m_dataRef->addRef();
+        return *this;
     }
     MatrixT& operator=(const MatrixT& m) { 
-        return MatrixT((const MatrixT&)*this); 
+        m_data = m.m_data;
+        m_rows = m.m_rows;
+        m_cols = m.m_cols;
+        // not manage if no refs
+        m_managed = m.m_dataRef ? m.m_managed : false;
+        m_dataRef = m.m_dataRef;
+        if (m_dataRef) m_dataRef->addRef();
+        return *this;
+    }
+    MatrixT& operator=(MatrixT&& m) {
+        cout << "operator &&" << endl;
+        m_data = m.m_data;
+        m_rows = m.m_rows;
+        m_cols = m.m_cols;
+        m_managed = m.m_managed;
+        m_dataRef = m.m_dataRef;
+
+        m.clear();
+        return *this;
     }
 
     VectorT<T> operator[](int index) { return VectorT<T>(m_data + m_cols*index, m_cols, false); }
@@ -362,6 +404,15 @@ public:
     Iterator begin() const { return Iterator(m_data, m_rows, m_cols, 0); }
     Iterator end() { return Iterator(m_data, m_rows, m_cols, m_rows*m_cols); }
     Iterator end() const { return Iterator(m_data, m_rows, m_cols, m_rows*m_cols); }
+
+private:
+    void clear() {
+        m_data = nullptr;
+        m_rows = 0;
+        m_cols = 0;
+        m_managed = false;
+        m_dataRef = nullptr;
+    }
 
 private:
     ValueType*              m_data;

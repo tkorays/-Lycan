@@ -2,15 +2,15 @@
 #define __LYCAN_IMGPROC_H__
 
 #include "lycan.h"
-#include "graphic.h"
+#include "basic.h"
 #include <math.h>
 
 namespace lycan { namespace imgproc {
 
 template <typename T>
-void fill(Matrix<T>& mat, Rect<int> rect, T d) {
+void fill(MatrixT<T>& mat, RectT<int> rect, T d) {
     for (int i = lycan::max<int>(0, std::move(rect.top)); i < lycan::min<int>(mat.rows(), std::move(rect.bottom)); i++) {
-        lycan::Vector<T> row = mat[i];
+        lycan::VectorT<T> row = mat[i];
         for (int j = lycan::max<int>(0, std::move(rect.left)); j < lycan::min<int>(mat.cols(), std::move(rect.right)); j++) {
             row[j] = d;
         }
@@ -18,8 +18,8 @@ void fill(Matrix<T>& mat, Rect<int> rect, T d) {
 }
 
 template <typename T>
-Matrix<T> move(Matrix<T>& mat, Position<int> pos, T fillValue) {
-    Matrix<T> matRet(mat.cols(), mat.rows());
+MatrixT<T> move(MatrixT<T>& mat, PositionT<int> pos, T fillValue) {
+    MatrixT<T> matRet(mat.cols(), mat.rows());
     for (int i = 0; i < mat.rows(); i++) {
         for (int j = 0; j < mat.cols(); j++) {
             if (i - pos.y >= 0 && i - pos.y < mat.rows() && j - pos.x >= 0 && j - pos.x < mat.cols()) {
@@ -34,8 +34,8 @@ Matrix<T> move(Matrix<T>& mat, Position<int> pos, T fillValue) {
 }
 
 template <typename T>
-Matrix<T> mirrorH(Matrix<T>& mat) {
-    Matrix<T> matRet(mat.cols(), mat.rows());
+MatrixT<T> mirrorH(MatrixT<T>& mat) {
+    MatrixT<T> matRet(mat.cols(), mat.rows());
     for (int i = 0; i < mat.rows(); i++) {
         for (int j = 0; j < mat.cols(); j++) {
             matRet[i][j] = mat[i][mat.cols() - 1 - j];
@@ -45,8 +45,8 @@ Matrix<T> mirrorH(Matrix<T>& mat) {
 }
 
 template <typename T>
-Matrix<T> mirrorV(Matrix<T>& mat) {
-    Matrix<T> matRet(mat.cols(), mat.rows());
+MatrixT<T> mirrorV(MatrixT<T>& mat) {
+    MatrixT<T> matRet(mat.cols(), mat.rows());
     for (int i = 0; i < mat.rows(); i++) {
         for (int j = 0; j < mat.cols(); j++) {
             matRet[i][j] = mat[mat.rows() - 1 - i][j];
@@ -56,8 +56,8 @@ Matrix<T> mirrorV(Matrix<T>& mat) {
 }
 
 template <typename T>
-Matrix<T> transpose(Matrix<T>& mat) {
-    Matrix<T> matRet(mat.rows(), mat.cols());
+MatrixT<T> transpose(MatrixT<T>& mat) {
+    MatrixT<T> matRet(mat.rows(), mat.cols());
     for (int i = 0; i < matRet.rows(); i++) {
         for (int j = 0; j < matRet.cols(); j++) {
             matRet[i][j] = mat[j][i];
@@ -67,8 +67,8 @@ Matrix<T> transpose(Matrix<T>& mat) {
 }
 
 template <typename T>
-Matrix<T> scale(Matrix<T>& mat, float scaleX, float scaleY) {
-    Matrix<T> matRet(static_cast<int>(mat.cols()*scaleX), static_cast<int>(mat.rows()*scaleY));
+MatrixT<T> scale(MatrixT<T>& mat, float scaleX, float scaleY) {
+    MatrixT<T> matRet(static_cast<int>(mat.cols()*scaleX), static_cast<int>(mat.rows()*scaleY));
     if (scaleX == 0.0 || scaleY == 0.0) return matRet;
 
     for (int i = 0; i < matRet.rows(); i++) {
@@ -82,9 +82,9 @@ Matrix<T> scale(Matrix<T>& mat, float scaleX, float scaleY) {
 }
 
 template <typename T>
-Matrix<T> rotate(Matrix<T>&& mat, float angle, T fillValue) {
+MatrixT<T> rotate(MatrixT<T>&& mat, float angle, T fillValue) {
     const float PI = 3.1415926f;
-    Matrix<T> matRet(mat.cols(), mat.rows());
+    MatrixT<T> matRet(mat.cols(), mat.rows());
     for (int i = 0; i < matRet.rows(); i++) {
         for (int j = 0; j < matRet.cols(); j++) {
             int u = static_cast<int>(i*cos(angle*PI / 180) + j*sin(angle*PI / 180) + 0.5);
@@ -101,8 +101,8 @@ Matrix<T> rotate(Matrix<T>&& mat, float angle, T fillValue) {
 }
 
 template <typename T>
-Matrix<T> guassBlur(Matrix<T>& mat) {
-    Matrix<T> matRet(mat.cols(), mat.rows());
+MatrixT<T> guassBlur(MatrixT<T>& mat) {
+    MatrixT<T> matRet(mat.cols(), mat.rows());
     return matRet;
 }
 
